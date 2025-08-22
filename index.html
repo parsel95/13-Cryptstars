@@ -10,6 +10,9 @@
     <link rel="preload" href="fonts/exo2-regular.woff2" as="font" crossorigin="anonymous">
     <link rel="preload" href="fonts/exo2-semibold.woff2" as="font" crossorigin="anonymous">
     <link rel="preload" href="fonts/exo2-bold.woff2" as="font" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
     <link rel="stylesheet" href="css/style.min.css">
 </head>
 
@@ -252,8 +255,8 @@
             </div>
 
             <!-- При переключении на карту нужно отобразить данный контейнер -->
-            <div class="container" style="display: none">
-                <div class="map">
+            <div class="container" style="display: none;">
+                <div class="map" id="map" style="height: 684px; width: 100%;">
                     <!--
                         Карту нужно отрисовать в этот контейнер. Иконки для карты -
                         img/pin.svg и img/pin-verified.svg для обычных пользователей
@@ -298,8 +301,8 @@
             <div class="modal__content">
                 <h2 class="modal__description">Покупка криптовалюты</h2>
                 <!-- Не забудьте указать верный action-атрибут -->
-                <form class="modal-buy" method="post">
-                    <!-- 
+                <form id="modal-buy" class="modal-buy" method="post" enctype="multipart/form-data" action="https://cryptostar.grading.htmlacademy.pro/">
+                    <!--
                         Обратите внимание, что всем полям для отправки на сервер нужно указать
                         атрибуты name (их список вы найдёте в техзадании), а часть полей
                         вообще отправляется скрытыми
@@ -325,38 +328,38 @@
                     </div>
                     <div class="modal__container modal__container--small">
                         <div class="modal__input-wrapper modal__input-wrapper--min">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label><span class="custom-input__label">Оплата</span><span
                                         class="custom-input__unit">₽</span>
                                     <button class="btn btn--textblue custom-input__btn" type="button">обменять все
                                     </button>
-                                    <input type="number" value="" placeholder="0">
+                                    <input type="number" name="sendingAmount" value="" placeholder="0" required data-pristine-required-message="Поле обязательно для заполнения" data-maxlength="12">
                                 </label>
                                 <!-- Пример стилизации ошибки валидации -->
-                                <div class="custom-input__error">Минимальная сумма — 9 999 999 ₽</div>
+                                <!-- <div class="custom-input__error">Минимальная сумма — 9 999 999 ₽</div> -->
                             </div>
                         </div>
                         <svg class="modal__container-svg" width="14" height="12" aria-hidden="true">
                             <use xlink:href="#icon-arrow-right"></use>
                         </svg>
                         <div class="modal__input-wrapper modal__input-wrapper--min">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label><span class="custom-input__label">Зачисление</span><span
                                         class="custom-input__unit">KEKS</span>
-                                    <input type="number" placeholder="0">
+                                    <input type="number" name="receivingAmount" placeholder="0" required data-pristine-required-message="Поле обязательно для заполнения" data-maxlength="10">
                                 </label>
                             </div>
                         </div>
                     </div>
                     <div class="modal__container">
                         <div class="modal__select-wrapper">
-                            <div class="select"><span>Плaтёжная система</span>
+                            <div class="select custom-input--pristine"><span>Плaтёжная система</span>
                                 <!--
                                     При отрисовке в списке платёжных систем нужно отразить только те,
                                     которые есть у пользователя. Способ - удалить из разметки или добавить disable-атрибут
                                     остаётся на ваше усмотрение. Первый пункт, с предложением выбора, должен быть всегда
                                 -->
-                                <select>
+                                <select name="paymentMethod">
                                     <option selected disabled>Выберите платёжную систему</option>
                                     <option>CryptoEx</option>
                                     <option>Первый криптобанк</option>
@@ -366,7 +369,7 @@
                             </div>
                         </div>
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--card custom-input--pristine">
                                 <!-- В случае, если выбрана оплата наличными, поле нужно оставить пустым -->
                                 <label><span class="custom-input__label">Номер банковской карты пользователя</span>
                                     <input type="number" placeholder="1234 5678 9012 3456" disabled>
@@ -376,14 +379,14 @@
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
                             <div class="custom-input">
                                 <label><span class="custom-input__label">Номер криптокошелька пользователя</span>
-                                    <input type="number" placeholder="08701943851-9832345" disabled>
+                                    <input class="custom-input__input" type="text" placeholder="08701943851-9832345" disabled>
                                 </label>
                             </div>
                         </div>
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label><span class="custom-input__label">Платёжный пароль</span>
-                                    <input type="password" value="123456" placeholder="Введите пароль">
+                                    <input type="password" name="paymentPassword" value="123456" placeholder="Введите пароль" required>
                                 </label>
                             </div>
                         </div>
@@ -426,8 +429,8 @@
             <div class="modal__content">
                 <h2 class="modal__description">Продажа криптовалюты</h2>
                 <!-- Не забудьте указать верный action-атрибут -->
-                <form class="modal-sell" method="post">
-                    <!-- 
+                <form id="modal-sell" class="modal-sell" method="post" enctype="multipart/form-data" action="https://cryptostar.grading.htmlacademy.pro/">
+                    <!--
                         Обратите внимание, что всем полям для отправки на сервер нужно указать
                         атрибуты name (их список вы найдёте в техзадании), а часть полей
                         вообще отправляется скрытыми
@@ -460,27 +463,26 @@
                     </div>
                     <div class="modal__container">
                         <div class="modal__input-wrapper modal__input-wrapper--min">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label>
                                     <span class="custom-input__label">Оплата</span>
                                     <span class="custom-input__unit">KEKS</span>
                                     <button class="btn btn--textblue custom-input__btn" type="button">обменять
                                         все</button>
-                                    <input type="number" value="" placeholder="0">
+                                    <input type="number" name="sendingAmount" value="" placeholder="0" required data-pristine-required-message="Поле обязательно для заполнения" data-maxlength="12">
                                 </label>
-                                <div class="custom-input__error">Минимальная сумма — 9 999 999 ₽</div>
                             </div>
                         </div>
                         <svg class="modal__container-svg" width="14" height="12" aria-hidden="true">
                             <use xlink:href="#icon-arrow-right"></use>
                         </svg>
                         <div class="modal__input-wrapper modal__input-wrapper--min">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label><span class="custom-input__label">Зачисление</span><span
                                         class="custom-input__unit">₽</span>
                                     <button class="btn btn--textblue custom-input__btn" type="button">обменять все
                                     </button>
-                                    <input type="number" value="" placeholder="0">
+                                    <input type="number" name="receivingAmount" value="" placeholder="0" required data-pristine-required-message="Поле обязательно для заполнения" data-maxlength="10">
                                 </label>
                             </div>
                         </div>
@@ -489,18 +491,18 @@
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
                             <div class="custom-input">
                                 <label><span class="custom-input__label">Номер криптокошелька пользователя</span>
-                                    <input type="number" placeholder="08701943851-983457-2345" disabled>
+                                    <input class="custom-input__input" type="text" placeholder="08701943851-983457-2345" disabled>
                                 </label>
                             </div>
                         </div>
                         <div class="modal__select-wrapper">
-                            <div class="select"><span>Плaтёжная система</span>
+                            <div class="select custom-input--pristine"><span>Плaтёжная система</span>
                                 <!--
                                     При отрисовке в списке платёжных систем нужно отразить только те,
                                     которые есть у пользователя. Способ - удалить из разметки или добавить disable-атрибут
                                     остаётся на ваше усмотрение. Первый пункт, с предложением выбора, должен быть всегда
                                 -->
-                                <select>
+                                <select name="paymentMethod">
                                     <option selected disabled>Выберите платёжную систему</option>
                                     <option>CryptoEx</option>
                                     <option>Первый криптобанк</option>
@@ -510,7 +512,7 @@
                             </div>
                         </div>
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--card">
                                 <!-- В случае, если выбрана оплата наличными, поле нужно оставить пустым -->
                                 <label><span class="custom-input__label">Номер банковской карты пользователя</span>
                                     <input type="number" placeholder="1234 5678 9012 3456" disabled>
@@ -518,9 +520,9 @@
                             </div>
                         </div>
                         <div class="modal__input-wrapper modal__input-wrapper--decorated">
-                            <div class="custom-input">
+                            <div class="custom-input custom-input--pristine">
                                 <label><span class="custom-input__label">Платёжный пароль</span>
-                                    <input type="password" placeholder="Введите пароль">
+                                    <input type="password" name="paymentPassword" placeholder="Введите пароль" required data-pristine-required-message="Поле обязательно для заполнения">
                                 </label>
                             </div>
                         </div>
@@ -595,11 +597,11 @@
                 </svg>
                 <span>Неопознанный енот</span>
             </span>
-            <p class="user-card__cash-item"><span class="user-card__cash-label">Валюта</span><span
+            <p class="user-card__cash-item user-card__cash-item--currency"><span class="user-card__cash-label">Валюта</span><span
                     class="user-card__cash-data">KEKS</span></p>
-            <p class="user-card__cash-item"><span class="user-card__cash-label">Курс</span><span
+            <p class="user-card__cash-item user-card__cash-item--exchangerate"><span class="user-card__cash-label">Курс</span><span
                     class="user-card__cash-data">9 999 999 ₽</span></p>
-            <p class="user-card__cash-item"><span class="user-card__cash-label">Лимит</span><span
+            <p class="user-card__cash-item user-card__cash-item--limit"><span class="user-card__cash-label">Лимит</span><span
                     class="user-card__cash-data">9 900 ₽ – 9 900 000 000 ₽</span></p>
             <ul class="user-card__badges-list">
                 <li class="user-card__badges-item badge">BitTransfer</li>
@@ -611,8 +613,11 @@
         </div>
     </template>
 
+    <script src="./pristine/pristine.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
     <script src="./js/main.js" type="module"></script>
-
 </body>
 
 </html>
