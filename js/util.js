@@ -22,4 +22,31 @@ const setInputValue = (input, value) => {
   input.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
-export {isEscapeKey, roundToOneDecimal, roundToZeroDecimal, roundToTwoDecimal, normalizeValue, getConvertedValue, setInputValue};
+// Скрыть элемент
+const hideElement = (element) => {
+  element.style.visibility = 'hidden';
+  element.style.pointerEvents = 'none';
+};
+
+// Показать элемент
+const showElement = (element) => {
+  element.style.visibility = 'visible';
+  element.style.pointerEvents = 'auto';
+};
+
+// Показывает одно сообщение (успех или ошибка) и скрывает остальные
+function showMessage(messageElement, timeout = 2000) {
+  const allMessages = document.querySelectorAll('.modal__validation-message');
+
+  allMessages.forEach((element) => {
+    element.style.display = 'none';
+  });
+
+  messageElement.style.display = 'flex';
+
+  setTimeout(() => {
+    messageElement.style.display = 'none';
+  }, timeout);
+}
+
+export {isEscapeKey, roundToOneDecimal, roundToZeroDecimal, roundToTwoDecimal, normalizeValue, getConvertedValue, setInputValue, hideElement, showElement, showMessage };

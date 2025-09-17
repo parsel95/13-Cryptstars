@@ -3,7 +3,6 @@ import { limitInputLength } from './validation.js';
 import { amountPristine } from './modal.js';
 
 // Обработчик для кнопки "Обменять всё"
-
 const onExchangeAllClick = (modal, data) => {
   const sendingInput = modal.querySelector('[name="sendingAmount"]');
   const receivingInput = modal.querySelector('[name="receivingAmount"]');
@@ -11,10 +10,10 @@ const onExchangeAllClick = (modal, data) => {
   const maxCryptoUser = parseFloat(document.querySelector('#user-crypto-balance').textContent.replace(',', '.')) || 0;
 
   const maxSendingAmount = (data.status === 'seller') ?
-    data.balance.amount * data.exchangeRate :
+    data.balance.amount * data.exchangeRate - 1 :
     data.balance.amount / data.exchangeRate;
 
-  if(data.status === 'seller') {
+  if (data.status === 'seller') {
     setInputValue(
       sendingInput,
       roundToZeroDecimal(Math.min(maxFiatUser, maxSendingAmount))
@@ -31,12 +30,19 @@ const onExchangeAllClick = (modal, data) => {
 // Пересчет суммы при вводе отправляемой валюты
 const onAmountSendingInput = (evt, modal, data) => {
   const field = modal.querySelector('[name="receivingAmount"]');
-  limitInputLength(evt.target, data);
+  limitInputLength(evt.target);
 
   const value = Number(evt.target.value);
+  const rawResult = data.status === 'buyer'
+    ? value * data.exchangeRate
+    : value / data.exchangeRate;
+
+  evt.target.dataset.rawValue = value;
+  field.dataset.rawValue = rawResult;
+
   const result = data.status === 'buyer'
-    ? roundToZeroDecimal(value * data.exchangeRate)
-    : roundToTwoDecimal(value / data.exchangeRate);
+    ? roundToZeroDecimal(rawResult)
+    : roundToTwoDecimal(rawResult);
 
   field.value = String(result).replace(/\.$/, '');
 
@@ -47,12 +53,19 @@ const onAmountSendingInput = (evt, modal, data) => {
 // Пересчет суммы при вводе получаемой валюты
 const onAmountReceivingInput = (evt, modal, data) => {
   const field = modal.querySelector('[name="sendingAmount"]');
-  limitInputLength(evt.target, data);
+  limitInputLength(evt.target);
 
   const value = Number(evt.target.value);
+  const rawResult = data.status === 'buyer'
+    ? value / data.exchangeRate
+    : value * data.exchangeRate;
+
+  evt.target.dataset.rawValue = value;
+  field.dataset.rawValue = rawResult;
+
   const result = data.status === 'buyer'
-    ? roundToTwoDecimal(value / data.exchangeRate)
-    : roundToZeroDecimal(value * data.exchangeRate);
+    ? roundToTwoDecimal(rawResult)
+    : roundToZeroDecimal(rawResult);
 
   field.value = String(result).replace(/\.$/, '');
 

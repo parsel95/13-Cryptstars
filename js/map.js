@@ -1,5 +1,5 @@
 import { getDataUsers, getDataUsersArray} from './fetch.js';
-import { roundToZeroDecimal } from './util.js';
+import { roundToZeroDecimal, hideElement, showElement } from './util.js';
 import { checkedUsersButton } from './tabs.js';
 import { openUserModal } from './modal/modal.js';
 
@@ -123,10 +123,8 @@ listButton.addEventListener('click', () => {
   toggleMapTabs(listButton, mapButton);
   mapContainer.style.display = 'none';
   usersList.style.display = 'block';
-
-  tabsListControls.style.visibility = 'visible';
-  tabsListControls.style.pointerEvents = 'auto';
-
+  showElement(tabsListControls);
+  
   getDataUsers();
 });
 
@@ -134,9 +132,7 @@ mapButton.addEventListener('click', () => {
   toggleMapTabs(mapButton, listButton);
   usersList.style.display = 'none';
   mapContainer.style.display = 'block';
-
-  tabsListControls.style.visibility = 'hidden';
-  tabsListControls.style.pointerEvents = 'none';
+  hideElement(tabsListControls);
 
   map.invalidateSize();
   getDataUsersArray((users) => addMarkersToMap(users, checkedUsersButton.checked));

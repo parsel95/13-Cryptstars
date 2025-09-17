@@ -1,5 +1,14 @@
-import {renderUsers} from './users.js';
-import {createDataUser} from './user.js';
+import { renderUsers } from './users.js';
+import { createDataUser } from './user.js';
+import { hideElement, showElement } from './util.js';
+
+const showEmptyListMessage = () => {
+  const userProfile = document.querySelector('.user-profile');
+  const container = document.querySelector('.users-list__table-body');
+
+  hideElement(userProfile);
+
+};
 
 async function getDataUsersArray (callback) {
   try {
@@ -8,9 +17,9 @@ async function getDataUsersArray (callback) {
 
     callback(users);
 
-    // if (!response.ok) {
-    //   throw new Error(showAlert('Не удалось получить данные с сервера. Попробуйте ещё раз'));
-    // }
+    if (!response.ok) {
+      throw new Error(showAlert('Не удалось получить данные с сервера. Попробуйте ещё раз'));
+    }
   } catch (error) {
     // showAlert('Не удалось получить данные с сервера. Попробуйте ещё раз');
   }

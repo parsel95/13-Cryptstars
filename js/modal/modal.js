@@ -1,20 +1,16 @@
-import { isEscapeKey } from '../util.js';
-import { setAllOnSubmitValidations } from './validation.js';
+import { isEscapeKey, showMessage } from '../util.js';
+import { setAllOnSubmitValidations, validateReceivingField, validateSendingField } from './validation.js';
 import { onAmountSendingInput, onAmountReceivingInput, onExchangeAllClick } from './amount-conversion.js';
 import { setUserInfo } from './user-info.js';
 import { setFormInputValues } from './form-values.js';
 import { onPaymentMethodChange } from './payment-methods.js';
-import { validateReceivingField, validateSendingField } from './validation.js';
 
 // DOM-элементы
 const modalBuy = document.querySelector('.modal--buy');
 const modalSell = document.querySelector('.modal--sell');
 const body = document.body;
-
 const cancelButtons = document.querySelectorAll('.modal__close-btn');
 const modalOverlays = document.querySelectorAll('.modal__overlay');
-const modalBuyForm = document.querySelector('.modal-buy');
-const modalSellForm = document.querySelector('.modal-sell');
 const userWalletInputs = document.querySelectorAll('.custom-input__input');
 
 //Переменные для сохранения pristine вне функции
@@ -27,9 +23,27 @@ let activeSendingAmountInput = null;
 let activeReceivingAmountInput = null;
 let activeReceivingAmountHandler = null;
 
+// Общий обработчик для "Обменять всё"
+let handleExchangeAllClick = null;
+
 // Получение текущего открытого модального окна и формы
 const getActiveModal = () => modalBuy.style.display === 'block' ? modalBuy : modalSell;
-const getActiveForm = () => modalBuy.style.display === 'block' ? modalBuyForm : modalSellForm;
+const getActiveForm = () => getActiveModal().querySelector('form');
+
+// Сброс формы и pristine
+const resetFormAndPristine = (form) => {
+  if (pristine) {
+    pristine.reset();
+  }
+  pristine = null;
+
+  if (amountPristine) {
+    amountPristine.reset();
+  }
+  amountPristine = null;
+
+  form.reset();
+};
 
 // Удаляет обработчики событий с полей ввода при закрытии модалльного окна
 const removeAmountInputHandlers = () => {
@@ -46,39 +60,55 @@ const removeAmountInputHandlers = () => {
   activeReceivingAmountHandler = null;
 };
 
+// Отображение модального окна
+const showModal = (modal) => {
+  modal.style.display = 'block';
+  body.classList.add('scroll-lock');
+  modal.style.zIndex = '5000';
+};
+
+// Скрытие модального окна
+const hideModal = (modal) => {
+  modal.style.display = 'none';
+  body.classList.remove('scroll-lock');
+};
+
+// Удаляет обработчики клика по кнопке "Обменять всё"
+const removeExchangeAllHandlers = (modal) => {
+  if (handleExchangeAllClick) {
+    const exchangeAllButtons = modal.querySelectorAll('.custom-input__btn');
+    exchangeAllButtons.forEach((button) =>
+      button.removeEventListener('click', handleExchangeAllClick)
+    );
+    handleExchangeAllClick = null;
+  }
+};
+
 // Закрытие модального окна
 const hideUserModal = () => {
   const modal = getActiveModal();
   const form = getActiveForm();
   const inputCard = modal.querySelector('.custom-input--card input');
 
-  modal.style.display = 'none';
-  form.reset();
-  body.classList.remove('scroll-lock');
-
-  // Сброс плейсхолдеров
   inputCard.placeholder = '';
   userWalletInputs.forEach((user) => {
     user.placeholder = '';
   });
 
-  // Удаляем обработчики
   document.removeEventListener('keydown', onEscKeyDown);
-  cancelButtons.forEach((button) => button.addEventListener('click', () => hideUserModal));
-  modalOverlays.forEach((overlay) => overlay.addEventListener('click', () => hideUserModal));
+  cancelButtons.forEach((button) => button.removeEventListener('click', handleCloseModal));
+  modalOverlays.forEach((overlay) => overlay.removeEventListener('click', handleCloseModal));
 
-  // Сбрасываем pristine
-  if (pristine) {
-    pristine.reset();
-  }
-  pristine = null;
-  if (amountPristine) {
-    amountPristine.reset();
-  }
-  amountPristine = null;
-
+  hideModal(modal);
+  resetFormAndPristine(form);
   removeAmountInputHandlers();
+  removeExchangeAllHandlers(modal);
 };
+
+// Обработчик клика по кнопке закрытия
+function handleCloseModal () {
+  hideUserModal();
+}
 
 // Обработчик нажатия ESC для закрытия модального окна
 function onEscKeyDown (evt) {
@@ -88,6 +118,7 @@ function onEscKeyDown (evt) {
   }
 }
 
+// Показывает ошибку валидации для поля суммы, если пользователь ввёл значение, равное нулю
 function showZeroAmountError(input) {
   const parent = input.closest('.custom-input--pristine');
   let error = parent.querySelector('.custom-input__error');
@@ -103,10 +134,14 @@ function showZeroAmountError(input) {
   parent.classList.add('has-error');
 }
 
-const onFormSubmit = (evt) => {
+// Обработчик отправки формы обмена
+const onFormSubmit = async (evt) => {
   evt.preventDefault();
   const form = getActiveForm();
   const sendingInput = form.querySelector('[name="sendingAmount"]');
+  const receivingInput = form.querySelector('[name="receivingAmount"]');
+  const successMessage = form.querySelector('.modal__validation-message--success');
+  const errorMessage = form.querySelector('.modal__validation-message--error');
 
   const MainIsValid = pristine.validate();
   const AmountIsValid = amountPristine.validate();
@@ -118,12 +153,34 @@ const onFormSubmit = (evt) => {
     return;
   }
 
-  if (MainIsValid && AmountIsValid) {
-    console.log('Можно отправлять');
-    // form.submit();
-    // hideUserModal();
-  } else {
-    console.log('Форма невалидна');
+  if (!MainIsValid || !AmountIsValid) {
+    showMessage(errorMessage);
+    return;
+  }
+
+  const formData = new FormData(evt.target);
+
+  formData.set('sendingAmount', sendingInput.dataset.rawValue);
+  formData.set('receivingAmount', receivingInput.dataset.rawValue);
+
+  try {
+    const response = await fetch('https://cryptostar.grading.htmlacademy.pro/', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const responseText = await response.text();
+    console.log('Ответ сервера:', response.status, responseText);
+
+    if (response.ok) {
+      showMessage(successMessage);
+      form.reset();
+    } else {
+      showMessage(errorMessage);
+    }
+  } catch (err) {
+    console.error('Ошибка сети:', err);
+    showMessage(errorMessage);
   }
 };
 
@@ -136,6 +193,7 @@ const openUserModal = (data) => {
   const modalFormSelect = modal.querySelector('select');
   const exchangeAllButtons = modal.querySelectorAll('.custom-input__btn');
 
+  // Отображаем модальное окно
   modal.style.display = 'block';
   body.classList.add('scroll-lock');
   modal.style.zIndex = '5000';
@@ -145,9 +203,15 @@ const openUserModal = (data) => {
   setUserInfo(modal, data);
   setFormInputValues(modal, data);
 
-  cancelButtons.forEach((button) => button.addEventListener('click', hideUserModal));
-  modalOverlays.forEach((overlay) => overlay.addEventListener('click', hideUserModal));
-  exchangeAllButtons.forEach((button) => button.addEventListener('click', () => onExchangeAllClick(modal, data)));
+  // Устанавливаем обработчики закрытия
+  cancelButtons.forEach((button) => button.addEventListener('click', handleCloseModal));
+  modalOverlays.forEach((overlay) => overlay.addEventListener('click', handleCloseModal));
+
+  // Кнопка "Обменять всё"
+  handleExchangeAllClick = () => onExchangeAllClick(modal, data);
+  exchangeAllButtons.forEach((button) =>
+    button.addEventListener('click', handleExchangeAllClick)
+  );
 
   // Устанавливаем обработчики пересчета
   const sendHandler = (evt) => onAmountSendingInput(evt, modal, data);
@@ -179,13 +243,15 @@ const openUserModal = (data) => {
     errorTextClass: 'custom-input__error',
   });
 
+  // Обработчик отправки формы
   form.addEventListener('submit', onFormSubmit);
 
+  // Устанавливаем правила валидации
   setAllOnSubmitValidations(pristine, modal, sendingInput);
   validateSendingField (amountPristine, data, sendingInput);
   validateReceivingField(amountPristine, data, receivingInput);
 
-  //
+  // Обработчик смены метода оплаты
   const paymentHandler = (evt) => onPaymentMethodChange(evt, modal, data);
   modalFormSelect.addEventListener('change', paymentHandler);
 };

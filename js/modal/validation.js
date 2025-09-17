@@ -43,7 +43,7 @@ const validateSendingField = (pristine, data, field) => {
     field,
     (value) => {
       if (data.status === 'seller') {
-        return normalizeValue(value) <= roundToZeroDecimal(data.balance.amount * data.exchangeRate);
+        return normalizeValue(value) < roundToZeroDecimal(data.balance.amount * data.exchangeRate);
       } else {
         return true;
       }
