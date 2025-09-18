@@ -49,4 +49,15 @@ function showMessage(messageElement, timeout = 2000) {
   }, timeout);
 }
 
-export {isEscapeKey, roundToOneDecimal, roundToZeroDecimal, roundToTwoDecimal, normalizeValue, getConvertedValue, setInputValue, hideElement, showElement, showMessage };
+export {
+  isEscapeKey,
+  roundToOneDecimal,
+  roundToZeroDecimal,
+  roundToTwoDecimal,
+  normalizeValue,
+  getConvertedValue,
+  setInputValue,
+  hideElement,
+  showElement,
+  showMessage
+};

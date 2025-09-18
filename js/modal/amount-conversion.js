@@ -1,6 +1,6 @@
 import { roundToZeroDecimal, roundToTwoDecimal, setInputValue } from '../util.js';
 import { limitInputLength } from './validation.js';
-import { amountPristine } from './modal.js';
+import { state } from './controls/state.js';
 
 // Обработчик для кнопки "Обменять всё"
 const onExchangeAllClick = (modal, data) => {
@@ -46,8 +46,8 @@ const onAmountSendingInput = (evt, modal, data) => {
 
   field.value = String(result).replace(/\.$/, '');
 
-  amountPristine.validate(evt.target);
-  amountPristine.validate(field);
+  state.amountPristine.validate(evt.target);
+  state.amountPristine.validate(field);
 };
 
 // Пересчет суммы при вводе получаемой валюты
@@ -69,8 +69,8 @@ const onAmountReceivingInput = (evt, modal, data) => {
 
   field.value = String(result).replace(/\.$/, '');
 
-  amountPristine.validate(evt.target);
-  amountPristine.validate(field);
+  state.amountPristine.validate(evt.target);
+  state.amountPristine.validate(field);
 };
 
 export { onAmountSendingInput, onAmountReceivingInput, onExchangeAllClick };

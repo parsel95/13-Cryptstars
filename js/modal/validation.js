@@ -109,6 +109,22 @@ const validateReceivingField = (pristine, data, field) => {
   );
 };
 
+// Показывает ошибку валидации для поля суммы, если пользователь ввёл значение, равное нулю
+function showZeroAmountError(input) {
+  const parent = input.closest('.custom-input--pristine');
+  let error = parent.querySelector('.custom-input__error');
+
+  if (!error) {
+    error = document.createElement('div');
+    error.className = 'custom-input__error';
+    parent.appendChild(error);
+  }
+
+  error.textContent = 'Сумма не должна равняться нулю';
+  error.style.display = 'block';
+  parent.classList.add('has-error');
+}
+
 // Ограничивает ввод в поле по data-maxlength
 function limitInputLength(field) {
   const maxLength = field.dataset.maxlength;
@@ -123,4 +139,4 @@ const setAllOnSubmitValidations = (pristine, modal) => {
   validatePaymentMethod(pristine, modal);
 };
 
-export { setAllOnSubmitValidations, validateReceivingField, validateSendingField, limitInputLength };
+export { setAllOnSubmitValidations, validateReceivingField, validateSendingField, limitInputLength, showZeroAmountError };

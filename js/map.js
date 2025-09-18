@@ -1,7 +1,7 @@
 import { getDataUsers, getDataUsersArray} from './fetch.js';
 import { roundToZeroDecimal, hideElement, showElement } from './util.js';
 import { checkedUsersButton } from './tabs.js';
-import { openUserModal } from './modal/modal.js';
+import { openUserModal } from './modal/controls/open.js';
 
 const tabsMapControls = document.querySelectorAll('.tabs--toggle-list-map .tabs__control');
 const listButton = Array.from(tabsMapControls).find((button) => button.textContent === 'Cписок');
@@ -124,7 +124,7 @@ listButton.addEventListener('click', () => {
   mapContainer.style.display = 'none';
   usersList.style.display = 'block';
   showElement(tabsListControls);
-  
+
   getDataUsers();
 });
 

@@ -1,5 +1,5 @@
 import { checkedUsersButton, buyButton, sellButton } from './tabs.js';
-import { openUserModal} from './modal/modal.js';
+import { openUserModal} from './modal/controls/open.js';
 import { roundToZeroDecimal } from './util.js';
 
 const container = document.querySelector('.users-list__table-body');
