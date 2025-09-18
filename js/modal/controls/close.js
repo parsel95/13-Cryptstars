@@ -26,6 +26,16 @@ const resetFormAndPristine = (form) => {
   form.reset();
 };
 
+// Очищает плейсхолдеры в полях ввода при закрытии модального окна
+const clearInputPlaceholders = (modal) => {
+  const inputCard = modal.querySelector('.custom-input--card input');
+
+  inputCard.placeholder = '';
+  userWalletInputs.forEach((user) => {
+    user.placeholder = '';
+  });
+};
+
 // Удаляет обработчики событий с полей ввода при закрытии модалльного окна
 const removeAmountInputHandlers = () => {
   if (state.activeSendingAmountInput && state.activeSendingAmountHandler) {
@@ -52,25 +62,29 @@ const removeExchangeAllHandlers = (modal) => {
   }
 };
 
+// Удаляет обработчики закрытия модального окна
+const removeCancelHandlers = () => {
+  document.removeEventListener('keydown', onEscKeyDown);
+  cancelButtons.forEach((button) => button.removeEventListener('click', handleCloseModal));
+  modalOverlays.forEach((overlay) => overlay.removeEventListener('click', handleCloseModal));
+};
+
+// Удаляет все обработчики событий
+const removeAllHandlers = (modal) => {
+  removeAmountInputHandlers();
+  removeExchangeAllHandlers(modal);
+  removeCancelHandlers();
+};
+
 // Закрытие модального окна
 const hideUserModal = () => {
   const modal = getActiveModal();
   const form = getActiveForm();
-  const inputCard = modal.querySelector('.custom-input--card input');
 
-  inputCard.placeholder = '';
-  userWalletInputs.forEach((user) => {
-    user.placeholder = '';
-  });
-
-  document.removeEventListener('keydown', onEscKeyDown);
-  cancelButtons.forEach((button) => button.removeEventListener('click', handleCloseModal));
-  modalOverlays.forEach((overlay) => overlay.removeEventListener('click', handleCloseModal));
-
+  clearInputPlaceholders(modal);
   hideModal(modal);
   resetFormAndPristine(form);
-  removeAmountInputHandlers();
-  removeExchangeAllHandlers(modal);
+  removeAllHandlers(modal);
 };
 
 export { hideUserModal };
