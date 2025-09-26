@@ -1,5 +1,5 @@
 import { body } from './util.js';
-import { getActiveModal, getActiveForm, handleCloseModal, onEscKeyDown, cancelButtons, modalOverlays } from './util.js';
+import { getActiveModal, getActiveForm, onCloseModalClick, onEscKeyDown, cancelButtons, modalOverlays } from './util.js';
 import { state } from './state.js';
 
 // DOM-элементы
@@ -30,7 +30,9 @@ const resetFormAndPristine = (form) => {
 const clearInputPlaceholders = (modal) => {
   const inputCard = modal.querySelector('.custom-input--card input');
 
-  inputCard.placeholder = '';
+  if (inputCard) {
+    inputCard.placeholder = '';
+  }
   userWalletInputs.forEach((user) => {
     user.placeholder = '';
   });
@@ -65,8 +67,8 @@ const removeExchangeAllHandlers = (modal) => {
 // Удаляет обработчики закрытия модального окна
 const removeCancelHandlers = () => {
   document.removeEventListener('keydown', onEscKeyDown);
-  cancelButtons.forEach((button) => button.removeEventListener('click', handleCloseModal));
-  modalOverlays.forEach((overlay) => overlay.removeEventListener('click', handleCloseModal));
+  cancelButtons.forEach((button) => button.removeEventListener('click', onCloseModalClick));
+  modalOverlays.forEach((overlay) => overlay.removeEventListener('click', onCloseModalClick));
 };
 
 // Удаляет все обработчики событий
@@ -77,7 +79,7 @@ const removeAllHandlers = (modal) => {
 };
 
 // Закрытие модального окна
-const hideUserModal = () => {
+const closeUserModal = () => {
   const modal = getActiveModal();
   const form = getActiveForm();
 
@@ -87,4 +89,4 @@ const hideUserModal = () => {
   removeAllHandlers(modal);
 };
 
-export { hideUserModal };
+export { closeUserModal };

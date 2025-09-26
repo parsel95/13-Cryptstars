@@ -3,7 +3,6 @@ import { state } from './state.js';
 import { showZeroAmountError } from '../validation.js';
 import { showMessage } from '../../util.js';
 
-
 // Обработчик отправки формы обмена
 export const onFormSubmit = async (evt) => {
   evt.preventDefault();
@@ -15,6 +14,7 @@ export const onFormSubmit = async (evt) => {
 
   const MainIsValid = state.pristine.validate();
   const AmountIsValid = state.amountPristine.validate();
+  const API_URL = 'https://cryptostar.grading.htmlacademy.pro/';
 
   const sendingValue = parseFloat(sendingInput.value.trim().replace(',', '.'));
 
@@ -34,22 +34,20 @@ export const onFormSubmit = async (evt) => {
   formData.set('receivingAmount', receivingInput.dataset.rawValue);
 
   try {
-    const response = await fetch('https://cryptostar.grading.htmlacademy.pro/', {
+    const response = await fetch(API_URL, {
       method: 'POST',
       body: formData,
     });
 
-    const responseText = await response.text();
-    console.log('Ответ сервера:', response.status, responseText);
-
     if (response.ok) {
       showMessage(successMessage);
       form.reset();
+      state.pristine.reset();
+      state.amountPristine.reset();
     } else {
       showMessage(errorMessage);
     }
-  } catch (err) {
-    console.error('Ошибка сети:', err);
+  } catch (error) {
     showMessage(errorMessage);
   }
 };

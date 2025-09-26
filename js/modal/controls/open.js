@@ -1,5 +1,5 @@
 import { body } from './util.js';
-import { cancelButtons, modalOverlays, handleCloseModal, onEscKeyDown, modalBuy, modalSell } from './util.js';
+import { cancelButtons, modalOverlays, onCloseModalClick, onEscKeyDown, modalBuy, modalSell } from './util.js';
 import { state } from './state.js';
 import { setUserInfo } from '../user-info.js';
 import { setFormInputValues } from '../form-values.js';
@@ -8,45 +8,33 @@ import { setAllOnSubmitValidations, validateReceivingField, validateSendingField
 import { onPaymentMethodChange } from '../payment-methods.js';
 import { onFormSubmit } from './form-submit.js';
 
-// // Отображение модального окна
-// const showModal = (modal) => {
-//   modal.style.display = 'block';
-//   body.classList.add('scroll-lock');
-//   modal.style.zIndex = '5000';
-// };
-
-// Открытие модального окна с данными контрагента
-const openUserModal = (data) => {
-  const modal = data.status === 'seller' ? modalBuy : modalSell;
-  const form = modal.querySelector('form');
-  const sendingInput = modal.querySelector('[name="sendingAmount"]');
-  const receivingInput = modal.querySelector('[name="receivingAmount"]');
-  const modalFormSelect = modal.querySelector('select');
-  const exchangeAllButtons = modal.querySelectorAll('.custom-input__btn');
-
-  // Отображаем модальное окно
+// Отображение модального окна
+const showModal = (modal) => {
   modal.style.display = 'block';
   body.classList.add('scroll-lock');
   modal.style.zIndex = '5000';
+};
+
+// Установка обработчиков закрытия модального окна
+const setCloseHandlers = () => {
+  cancelButtons.forEach((button) => button.addEventListener('click', onCloseModalClick));
+  modalOverlays.forEach((overlay) => overlay.addEventListener('click', onCloseModalClick));
   document.addEventListener('keydown', onEscKeyDown);
+};
 
-  // Заполняем информацию в модалке
-  setUserInfo(modal, data);
-  setFormInputValues(modal, data);
-
-  // Устанавливаем обработчики закрытия
-  cancelButtons.forEach((button) => button.addEventListener('click', handleCloseModal));
-  modalOverlays.forEach((overlay) => overlay.addEventListener('click', handleCloseModal));
-
-  // Кнопка "Обменять всё"
+// Установка обработчиков клика по кнопке "Обменять всё"
+const setExchangeAllHandlers = (modal, data) => {
+  const exchangeAllButtons = modal.querySelectorAll('.custom-input__btn');
   state.handleExchangeAllClick = () => onExchangeAllClick(modal, data);
   exchangeAllButtons.forEach((button) =>
     button.addEventListener('click', state.handleExchangeAllClick)
   );
+};
 
-  // Устанавливаем обработчики пересчета
-  const sendHandler = (evt) => onAmountSendingInput(evt, modal, data);
-  const receiveHandler = (evt) => onAmountReceivingInput(evt, modal, data);
+// Установка обработчиков ввода в поля суммы
+const setAmountHandlers = (modal, data, sendingInput, receivingInput) => {
+  const sendHandler = () => onAmountSendingInput(modal, data);
+  const receiveHandler = () => onAmountReceivingInput(modal, data);
 
   if (sendingInput && receivingInput) {
     sendingInput.addEventListener('input', sendHandler);
@@ -57,8 +45,22 @@ const openUserModal = (data) => {
     state.activeReceivingAmountInput = receivingInput;
     state.activeReceivingAmountHandler = receiveHandler;
   }
+};
 
-  // Основной Pristine — для пароля и метода оплаты
+// Установка всех обработчиков модального окна
+const setAllHandlers = (modal, data, sendingInput, receivingInput, form) => {
+  setCloseHandlers();
+  setExchangeAllHandlers(modal, data);
+  setAmountHandlers(modal, data, sendingInput, receivingInput);
+
+  form.addEventListener('submit', onFormSubmit);
+
+  const modalFormSelect = modal.querySelector('select');
+  modalFormSelect.addEventListener('change', (evt) => onPaymentMethodChange(evt, modal, data));
+};
+
+// Инициализация pristine для формы
+const initPristine = (form) => {
   state.pristine = new Pristine(form, {
     classTo: 'custom-input--pristine',
     errorTextParent: 'custom-input--pristine',
@@ -66,25 +68,35 @@ const openUserModal = (data) => {
     errorTextClass: 'custom-input__error',
   }, false);
 
-  // Pristine для полей ввода суммы
   state.amountPristine = new Pristine(form, {
     classTo: 'custom-input--pristine',
     errorTextParent: 'custom-input--pristine',
     errorTextTag: 'div',
     errorTextClass: 'custom-input__error',
   });
+};
 
-  // Обработчик отправки формы
-  form.addEventListener('submit', onFormSubmit);
-
-  // Устанавливаем правила валидации
+// Привязка валидации и обработчиков формы
+const setFormValidation = (modal, data, sendingInput, receivingInput) => {
   setAllOnSubmitValidations(state.pristine, modal, sendingInput);
-  validateSendingField (state.amountPristine, data, sendingInput);
+  validateSendingField(state.amountPristine, data, sendingInput);
   validateReceivingField(state.amountPristine, data, receivingInput);
+};
 
-  // Обработчик смены метода оплаты
-  const paymentHandler = (evt) => onPaymentMethodChange(evt, modal, data);
-  modalFormSelect.addEventListener('change', paymentHandler);
+// Открытие модального окна с данными контрагента
+const openUserModal = (data) => {
+  const modal = data.status === 'seller' ? modalBuy : modalSell;
+  const form = modal.querySelector('form');
+  const sendingInput = modal.querySelector('[name="sendingAmount"]');
+  const receivingInput = modal.querySelector('[name="receivingAmount"]');
+
+  showModal(modal);
+  setUserInfo(modal, data);
+  setFormInputValues(modal, data);
+
+  setAllHandlers(modal, data, sendingInput, receivingInput, form);
+  initPristine(form);
+  setFormValidation(modal, data, sendingInput, receivingInput);
 };
 
 export { openUserModal };

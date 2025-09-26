@@ -34,7 +34,7 @@ const setInputMaxLength = (modal, balance, exchangeRate, status) => {
 
     receivingInput.dataset.maxlength = String(
       maxFiatUser >= maxSending ? maxReceiving : maxCryptoUser
-    ).length;
+    ).length + 3;
   } else {
     sendingInput.dataset.maxlength = String(
       maxCryptoUser >= maxReceiving ? maxBuyerSending : maxCryptoUser

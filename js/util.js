@@ -34,6 +34,16 @@ const showElement = (element) => {
   element.style.pointerEvents = 'auto';
 };
 
+// Скрыть элемент (display: none)
+const hideElementDisplayNone = (element) => {
+  element.style.display = 'none';
+};
+
+// Показать элемент (display: block)
+const showElementDisplayBlock = (element) => {
+  element.style.display = 'block';
+};
+
 // Показывает одно сообщение (успех или ошибка) и скрывает остальные
 function showMessage(messageElement, timeout = 2000) {
   const allMessages = document.querySelectorAll('.modal__validation-message');
@@ -59,5 +69,7 @@ export {
   setInputValue,
   hideElement,
   showElement,
-  showMessage
+  showMessage,
+  hideElementDisplayNone,
+  showElementDisplayBlock
 };

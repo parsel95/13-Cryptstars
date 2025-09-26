@@ -2,75 +2,72 @@ import { roundToZeroDecimal, roundToTwoDecimal, setInputValue } from '../util.js
 import { limitInputLength } from './validation.js';
 import { state } from './controls/state.js';
 
+//  Получение инпутов
+const getInputs = (modal) => ({
+  sending: modal.querySelector('[name="sendingAmount"]'),
+  receiving: modal.querySelector('[name="receivingAmount"]'),
+});
+
+// Универсальная функция пересчёта
+const recalcAmount = (modal, data, type) => {
+  const { sending, receiving } = getInputs(modal);
+  const input = type === 'sending' ? sending : receiving;
+  const field = type === 'sending' ? receiving : sending;
+
+  limitInputLength(input);
+
+  const value = Number(input.value);
+  const rawResult =
+    // eslint-disable-next-line no-nested-ternary
+    type === 'sending'
+      ? (data.status === 'buyer' ? value * data.exchangeRate : value / data.exchangeRate)
+      : (data.status === 'buyer' ? value / data.exchangeRate : value * data.exchangeRate);
+
+  input.dataset.rawValue = value;
+  field.dataset.rawValue = rawResult;
+
+  const result =
+    (type === 'sending' && data.status === 'buyer') ||
+    (type === 'receiving' && data.status === 'seller')
+      ? roundToZeroDecimal(rawResult)
+      : roundToTwoDecimal(rawResult);
+
+  field.value = String(result).replace(/\.$/, '');
+
+  state.amountPristine.validate(input);
+  state.amountPristine.validate(field);
+};
+
 // Обработчик для кнопки "Обменять всё"
 const onExchangeAllClick = (modal, data) => {
-  const sendingInput = modal.querySelector('[name="sendingAmount"]');
-  const receivingInput = modal.querySelector('[name="receivingAmount"]');
+  const { sending, receiving } = getInputs(modal);
   const maxFiatUser = parseFloat(document.querySelector('#user-fiat-balance').textContent.replace(',', '.')) || 0;
   const maxCryptoUser = parseFloat(document.querySelector('#user-crypto-balance').textContent.replace(',', '.')) || 0;
 
-  const maxSendingAmount = (data.status === 'seller') ?
-    data.balance.amount * data.exchangeRate - 1 :
-    data.balance.amount / data.exchangeRate;
+  const maxSendingAmount =
+    (data.status === 'seller') ?
+      data.balance.amount * data.exchangeRate - 1 :
+      data.balance.amount / data.exchangeRate;
 
   if (data.status === 'seller') {
     setInputValue(
-      sendingInput,
+      sending,
       roundToZeroDecimal(Math.min(maxFiatUser, maxSendingAmount))
     );
   } else {
     if (maxCryptoUser < maxSendingAmount) {
-      setInputValue(sendingInput, maxCryptoUser);
+      setInputValue(sending, maxCryptoUser);
     } else {
-      setInputValue(receivingInput, data.balance.amount);
+      setInputValue(receiving, data.balance.amount);
     }
   }
 };
 
-// Пересчет суммы при вводе отправляемой валюты
-const onAmountSendingInput = (evt, modal, data) => {
-  const field = modal.querySelector('[name="receivingAmount"]');
-  limitInputLength(evt.target);
+// Входные функции
+const onAmountSendingInput = (modal, data) =>
+  recalcAmount(modal, data, 'sending');
 
-  const value = Number(evt.target.value);
-  const rawResult = data.status === 'buyer'
-    ? value * data.exchangeRate
-    : value / data.exchangeRate;
-
-  evt.target.dataset.rawValue = value;
-  field.dataset.rawValue = rawResult;
-
-  const result = data.status === 'buyer'
-    ? roundToZeroDecimal(rawResult)
-    : roundToTwoDecimal(rawResult);
-
-  field.value = String(result).replace(/\.$/, '');
-
-  state.amountPristine.validate(evt.target);
-  state.amountPristine.validate(field);
-};
-
-// Пересчет суммы при вводе получаемой валюты
-const onAmountReceivingInput = (evt, modal, data) => {
-  const field = modal.querySelector('[name="sendingAmount"]');
-  limitInputLength(evt.target);
-
-  const value = Number(evt.target.value);
-  const rawResult = data.status === 'buyer'
-    ? value / data.exchangeRate
-    : value * data.exchangeRate;
-
-  evt.target.dataset.rawValue = value;
-  field.dataset.rawValue = rawResult;
-
-  const result = data.status === 'buyer'
-    ? roundToTwoDecimal(rawResult)
-    : roundToZeroDecimal(rawResult);
-
-  field.value = String(result).replace(/\.$/, '');
-
-  state.amountPristine.validate(evt.target);
-  state.amountPristine.validate(field);
-};
+const onAmountReceivingInput = (modal, data) =>
+  recalcAmount(modal, data, 'receiving');
 
 export { onAmountSendingInput, onAmountReceivingInput, onExchangeAllClick };

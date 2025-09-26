@@ -1,5 +1,5 @@
 import { isEscapeKey } from '../../util.js';
-import { hideUserModal } from './close.js';
+import { closeUserModal } from './close.js';
 
 // DOM-элементы
 const modalBuy = document.querySelector('.modal--buy');
@@ -13,15 +13,15 @@ const getActiveModal = () => modalBuy.style.display === 'block' ? modalBuy : mod
 const getActiveForm = () => getActiveModal().querySelector('form');
 
 // Обработчик клика по кнопке закрытия
-function handleCloseModal () {
-  hideUserModal();
+function onCloseModalClick () {
+  closeUserModal();
 }
 
 // Обработчик нажатия ESC для закрытия модального окна
 function onEscKeyDown (evt) {
   if (isEscapeKey(evt)) {
     evt.preventDefault();
-    hideUserModal();
+    closeUserModal();
   }
 }
 
@@ -33,6 +33,6 @@ export {
   modalSell,
   getActiveModal,
   getActiveForm,
-  handleCloseModal,
+  onCloseModalClick,
   onEscKeyDown,
 };

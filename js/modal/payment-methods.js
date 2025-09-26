@@ -2,6 +2,10 @@ import { getDataUserObject } from '../fetch.js';
 
 // Очищает и заполняет select новыми способами оплаты
 const populateSelect = (modal, methods) => {
+  if (!Array.isArray(methods)) {
+    return;
+  }
+
   const select = modal.querySelector('select');
   select.querySelectorAll('option:not(:first-child)').forEach((opt) => opt.remove());
 
