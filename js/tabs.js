@@ -6,6 +6,8 @@ const checkedUsersButton = document.querySelector('#checked-users');
 const tabsListControls = document.querySelectorAll('.tabs--toggle-buy-sell .tabs__control');
 const buyButton = Array.from(tabsListControls).find((button) => button.textContent === 'Купить');
 const sellButton = Array.from(tabsListControls).find((button) => button.textContent === 'Продать');
+const tabsMapControls = document.querySelectorAll('.tabs--toggle-list-map .tabs__control');
+const mapButton = Array.from(tabsMapControls).find((button) => button.textContent === 'Карта');
 
 // Универсальная функция обновления списка и карты
 const updateUsers = () => {
@@ -21,6 +23,12 @@ const toggleListTabs = (activeBtn, inactiveBtn) => {
   activeBtn.classList.add('is-active');
   inactiveBtn.classList.remove('is-active');
   getDataUsers();
+
+  if (activeBtn === sellButton) {
+    mapButton.disabled = true;
+  } else {
+    mapButton.disabled = false;
+  }
 };
 
 // Обработчики кликов по кнопкам

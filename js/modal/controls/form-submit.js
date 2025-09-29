@@ -1,19 +1,7 @@
 import { getActiveModal, getActiveForm } from './util.js';
 import { state } from './state.js';
 import { showZeroAmountError } from '../validation.js';
-import { showMessage, throttle } from '../../util.js';
-
-// Блокировка кнопки отправки формы
-const blockSubmitButton = (submitButton) => {
-  submitButton.disabled = true;
-  submitButton.textContent = 'Обмениваю...';
-};
-
-// Разблокировка кнопки отправки формы
-const unblockSubmitButton = (submitButton) => {
-  submitButton.disabled = false;
-  submitButton.textContent = 'Обменять';
-};
+import { showMessage, throttle, blockSubmitButton, unblockSubmitButton } from '../../util.js';
 
 // Основной обработчик отправки формы
 const handleFormSubmit = async (evt) => {
@@ -46,7 +34,7 @@ const handleFormSubmit = async (evt) => {
   formData.set('sendingAmount', sendingInput.dataset.rawValue);
   formData.set('receivingAmount', receivingInput.dataset.rawValue);
 
-  blockSubmitButton(submitButton);
+  blockSubmitButton(submitButton, 'Обмениваю...');
 
   try {
     const response = await fetch(API_URL, {
@@ -65,7 +53,7 @@ const handleFormSubmit = async (evt) => {
   } catch (error) {
     showMessage(errorMessage);
   } finally {
-    unblockSubmitButton(submitButton);
+    unblockSubmitButton(submitButton, 'Обменять');
   }
 };
 

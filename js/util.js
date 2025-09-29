@@ -101,6 +101,18 @@ function throttle (callback, delayBetweenFrames) {
   };
 }
 
+// Блокировка кнопки отправки формы
+const blockSubmitButton = (submitButton, text) => {
+  submitButton.disabled = true;
+  submitButton.textContent = text;
+};
+
+// Разблокировка кнопки отправки формы
+const unblockSubmitButton = (submitButton, text) => {
+  submitButton.disabled = false;
+  submitButton.textContent = text;
+};
+
 export {
   isEscapeKey,
   roundToOneDecimal,
@@ -115,5 +127,7 @@ export {
   hideElementDisplayNone,
   showElementDisplayBlock,
   debounce,
-  throttle
+  throttle,
+  blockSubmitButton,
+  unblockSubmitButton
 };
