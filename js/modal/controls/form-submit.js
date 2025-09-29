@@ -1,16 +1,29 @@
-import { getActiveForm } from './util.js';
+import { getActiveModal, getActiveForm } from './util.js';
 import { state } from './state.js';
 import { showZeroAmountError } from '../validation.js';
-import { showMessage } from '../../util.js';
+import { showMessage, throttle } from '../../util.js';
 
-// Обработчик отправки формы обмена
-export const onFormSubmit = async (evt) => {
+// Блокировка кнопки отправки формы
+const blockSubmitButton = (submitButton) => {
+  submitButton.disabled = true;
+  submitButton.textContent = 'Обмениваю...';
+};
+
+// Разблокировка кнопки отправки формы
+const unblockSubmitButton = (submitButton) => {
+  submitButton.disabled = false;
+  submitButton.textContent = 'Обменять';
+};
+
+// Основной обработчик отправки формы
+const handleFormSubmit = async (evt) => {
   evt.preventDefault();
   const form = getActiveForm();
   const sendingInput = form.querySelector('[name="sendingAmount"]');
   const receivingInput = form.querySelector('[name="receivingAmount"]');
   const successMessage = form.querySelector('.modal__validation-message--success');
   const errorMessage = form.querySelector('.modal__validation-message--error');
+  const submitButton = getActiveModal().querySelector('.modal__submit');
 
   const MainIsValid = state.pristine.validate();
   const AmountIsValid = state.amountPristine.validate();
@@ -33,6 +46,8 @@ export const onFormSubmit = async (evt) => {
   formData.set('sendingAmount', sendingInput.dataset.rawValue);
   formData.set('receivingAmount', receivingInput.dataset.rawValue);
 
+  blockSubmitButton(submitButton);
+
   try {
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -49,5 +64,10 @@ export const onFormSubmit = async (evt) => {
     }
   } catch (error) {
     showMessage(errorMessage);
+  } finally {
+    unblockSubmitButton(submitButton);
   }
 };
+
+// Оборачиваем обработчик в throttle
+export const onFormSubmit = throttle(handleFormSubmit, 1500);

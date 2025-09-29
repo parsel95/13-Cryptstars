@@ -1,4 +1,4 @@
-import { roundToZeroDecimal, roundToTwoDecimal, setInputValue } from '../util.js';
+import { roundToZeroDecimal, roundToTwoDecimal, setInputValue, debounce } from '../util.js';
 import { limitInputLength } from './validation.js';
 import { state } from './controls/state.js';
 
@@ -63,11 +63,15 @@ const onExchangeAllClick = (modal, data) => {
   }
 };
 
+// Функция для дебаунса
+const debouncedRecalcSending = debounce((modal, data) => recalcAmount(modal, data, 'sending'), 400);
+const debouncedRecalcReceiving = debounce((modal, data) => recalcAmount(modal, data, 'receiving'), 400);
+
 // Входные функции
 const onAmountSendingInput = (modal, data) =>
-  recalcAmount(modal, data, 'sending');
+  debouncedRecalcSending(modal, data);
 
 const onAmountReceivingInput = (modal, data) =>
-  recalcAmount(modal, data, 'receiving');
+  debouncedRecalcReceiving(modal, data);
 
 export { onAmountSendingInput, onAmountReceivingInput, onExchangeAllClick };
