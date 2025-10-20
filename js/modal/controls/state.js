@@ -1,22 +1,27 @@
+/**
+ * @file state.js
+ * @description
+ * Модуль для управления состоянием валидации и обработчиков событий в модальных окнах.
+ * Содержит экземпляры Pristine для валидации форм и ссылки на активные элементы.
+ */
+
+/**
+ * Объект состояния приложения для управления валидацией и обработчиками.
+ * @type {Object}
+ * @property {Pristine|null} pristine - Основной экземпляр Pristine для валидации формы.
+ * @property {Pristine|null} amountPristine - Экземпляр Pristine для валидации суммы.
+ * @property {HTMLInputElement|null} activeSendingAmountInput - Текущий input поля "Отправляю".
+ * @property {Function|null} activeSendingAmountHandler - Обработчик события input для поля "Отправляю".
+ * @property {HTMLInputElement|null} activeReceivingAmountInput - Текущий input поля "Получаю".
+ * @property {Function|null} activeReceivingAmountHandler - Обработчик события input для поля "Получаю".
+ * @property {Function|null} handleExchangeAllClick - Обработчик для кнопок "Обменять всё".
+ */
 export const state = {
-  // Основной экземпляр Pristine для валидации формы (пароль, метод оплаты)
   pristine: null,
-
-  // Дополнительный экземпляр Pristine для валидации суммы
   amountPristine: null,
-
-  // Текущий input поля "Отправляю"
   activeSendingAmountInput: null,
-
-  // Обработчик события input для поля "Отправляю"
   activeSendingAmountHandler: null,
-
-  // Текущий input поля "Получаю"
   activeReceivingAmountInput: null,
-
-  // Обработчик события input для поля "Получаю"
   activeReceivingAmountHandler: null,
-
-  // Общий обработчик для кнопок "Обменять всё"
   handleExchangeAllClick: null,
 };

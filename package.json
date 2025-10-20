@@ -6,7 +6,8 @@
     "devDependencies": {
         "browser-sync": "^3.0.4",
         "eslint": "^8.19.0",
-        "eslint-config-htmlacademy": "^6.0.0"
+        "eslint-config-htmlacademy": "^6.0.0",
+        "jsdoc": "^4.0.5"
     },
     "license": "MIT",
     "scripts": {

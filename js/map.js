@@ -1,19 +1,31 @@
+/**
+ * @file map.js
+ * @description
+ * Модуль работы с картой Leaflet, создания маркеров пользователей и попапов.
+ * Реализует логику переключения между картой и списком пользователей,
+ * фильтрацию проверенных пользователей и отображение балунов с данными пользователя.
+ */
+
+// @ts-nocheck
+
 import { getDataUsersArray} from './fetch.js';
 import { renderUsers } from './users.js';
 import { hideElement, showElement } from './util.js';
 import { checkedUsersButton } from './tabs.js';
 import { openUserModal } from './modal/controls/open.js';
 
-// Элементы управления вкладками
+/** Элементы вкладок "Список" и "Карта" */
 const tabsMapControls = document.querySelectorAll('.tabs--toggle-list-map .tabs__control');
 const listButton = Array.from(tabsMapControls).find((button) => button.textContent === 'Cписок');
 const mapButton = Array.from(tabsMapControls).find((button) => button.textContent === 'Карта');
+
+/** Список пользователей и контейнеры для карты и списка */
 const usersList = document.querySelector('.users-list');
 const containers = document.querySelectorAll('.container');
 const tabsListControls = document.querySelector('.tabs--toggle-buy-sell');
 const mapContainer = [...containers].find((container) => container.querySelector('.map'));
 
-// Инициализация карты
+/** Инициализация карты Leaflet */
 const map = L.map('map')
   .setView({
     lat: 59.92749,
@@ -27,10 +39,14 @@ L.tileLayer(
   },
 ).addTo(map);
 
-// Группа для маркеров
+/** Группа для маркеров */
 const markerGroup = L.layerGroup().addTo(map);
 
-// Создание иконки для маркера
+/**
+ * Создает иконку маркера в зависимости от статуса проверки пользователя.
+ * @param {boolean} isVerified - Статус проверки пользователя.
+ * @returns {L.Icon} - Иконка маркера для Leaflet.
+ */
 const createMarkerIcon = (isVerified) => {
   const iconUrl = isVerified ? 'img/pin-verified.svg' : 'img/pin.svg';
   return L.icon({
@@ -40,7 +56,9 @@ const createMarkerIcon = (isVerified) => {
   });
 };
 
-//Правка стилей в балуне
+/**
+ * Применяет стили к попапу карты.
+ */
 const styleMapPopup = () => {
   document.querySelector('.user-card').style.display = 'grid';
   document.querySelector('.user-card__cash-item--currency').style.gridColumn = '1 / 2';
@@ -50,7 +68,19 @@ const styleMapPopup = () => {
   document.querySelector('.user-card__change-btn').style.gridColumn = '1 / 1';
 };
 
-// Заполняет основные данные пользователя в попапе
+/**
+ * Заполняет данные пользователя в попапе карты.
+ * @param {HTMLElement} popupElement - DOM-элемент попапа.
+ * @param {Object} data - Данные пользователя.
+ * @param {string} data.userName - Имя пользователя.
+ * @param {Object} data.balance - Баланс пользователя.
+ * @param {string} data.balance.currency - Валюта баланса.
+ * @param {number} data.balance.amount - Сумма баланса.
+ * @param {number} data.exchangeRate - Курс обмена.
+ * @param {'buyer'|'seller'} data.status - Роль пользователя.
+ * @param {boolean} data.isVerified - Статус проверки пользователя.
+ * @param {number} data.minAmount - Минимальная сумма обмена.
+ */
 const populateUserCardData = (popupElement, data) => {
   if (!data.isVerified) {
     popupElement.querySelector('.user-card__user-name svg').remove();
@@ -69,7 +99,11 @@ const populateUserCardData = (popupElement, data) => {
   popupElement.querySelector('.user-card__cash-item--limit .user-card__cash-data').textContent = limitText;
 };
 
-// Заполняет список способов оплаты в попапе
+/**
+ * Заполняет список способов оплаты в попапе.
+ * @param {HTMLElement} popupElement - DOM-элемент попапа.
+ * @param {Object} data - Данные пользователя.
+ */
 const populatePaymentMethods = (popupElement, data) => {
   const paymentMethodsContainer = popupElement.querySelector('.user-card__badges-list');
   paymentMethodsContainer.innerHTML = '';
@@ -84,7 +118,11 @@ const populatePaymentMethods = (popupElement, data) => {
   }
 };
 
-// Навешивает события на попап (например, кнопка "Изменить")
+/**
+ * Заполняет список способов оплаты в попапе.
+ * @param {HTMLElement} popupElement - DOM-элемент попапа.
+ * @param {Object} data - Данные пользователя.
+ */
 const setPopupEvents = (popupElement, data) => {
   const changeButton = popupElement.querySelector('.user-card__change-btn');
   changeButton.addEventListener('click', () => {
@@ -92,7 +130,11 @@ const setPopupEvents = (popupElement, data) => {
   });
 };
 
-// Основная функция создания попапа
+/**
+ * Создает DOM-элемент попапа для карты с данными пользователя.
+ * @param {Object} data - Данные пользователя.
+ * @returns {HTMLElement} - DOM-элемент попапа.
+ */
 const createMapPopup = (data) => {
   const template = document.querySelector('#map-baloon__template').content.querySelector('.user-card');
   const popupElement = template.cloneNode(true);
@@ -104,7 +146,10 @@ const createMapPopup = (data) => {
   return popupElement;
 };
 
-// Создание маркера с балуном
+/**
+ * Создает маркер на карте для пользователя с привязанным попапом.
+ * @param {Object} user - Данные пользователя.
+ */
 const createMarker = (user) => {
   if (!user.coords) {
     return;
@@ -122,7 +167,11 @@ const createMarker = (user) => {
   });
 };
 
-// Добавление маркеров на карту
+/**
+ * Добавляет маркеры пользователей на карту.
+ * @param {Array<Object>} users - Массив пользователей.
+ * @param {boolean} [onlyVerified=false] - Фильтровать только проверенных пользователей.
+ */
 const addMarkersToMap = (users, onlyVerified = false) => {
   markerGroup.clearLayers();
 
@@ -139,13 +188,22 @@ const addMarkersToMap = (users, onlyVerified = false) => {
   filtered.forEach(createMarker);
 };
 
-// Логика открытия и закрытия карты и списка пользователей
+/**
+ * Переключает активную вкладку между картой и списком.
+ * @param {HTMLElement} activeBtn - Активная вкладка.
+ * @param {HTMLElement} inactiveBtn - Неактивная вкладка.
+ */
 const toggleMapTabs = (activeBtn, inactiveBtn) => {
   activeBtn.classList.add('is-active');
   inactiveBtn.classList.remove('is-active');
 };
 
-// Кнопка "Список пользователей" — показывает список вместо карты
+/**
+ * Обработчик клика по кнопке "Список пользователей" — показывает список вместо карты.
+ * Переключает активные вкладки, скрывает карту, отображает таблицу пользователей.
+ * Загружает и отображает данные пользователей, обрабатывает пустой список.
+ * @returns {void}
+ */
 listButton.addEventListener('click', () => {
   toggleMapTabs(listButton, mapButton);
   mapContainer.style.display = 'none';
@@ -172,7 +230,12 @@ listButton.addEventListener('click', () => {
   });
 });
 
-// Кнопка "Карта" — показывает карту вместо списка
+/**
+ * Обработчик клика по кнопке "Карта" — показывает карту вместо списка.
+ * Переключает активные вкладки, скрывает список, отображает карту.
+ * Загружает данные пользователей и добавляет маркеры на карту.
+ * @returns {void}
+ */
 mapButton.addEventListener('click', () => {
   toggleMapTabs(mapButton, listButton);
   usersList.style.display = 'none';
@@ -195,8 +258,6 @@ mapButton.addEventListener('click', () => {
       addMarkersToMap(users, checkedUsersButton.checked);
     }
   });
-
-
 });
 
 export { addMarkersToMap };

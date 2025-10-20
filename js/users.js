@@ -1,3 +1,16 @@
+/**
+ * @file users.js
+ * @description
+ * Модуль для отрисовки и фильтрации списка пользователей на странице P2P-обмена.
+ * Отвечает за создание карточек пользователей, отображение их платёжных методов,
+ * фильтрацию по активным вкладкам ("Купить", "Продать", "Проверенные") и
+ * открытие модального окна обмена при нажатии кнопки "Обменять".
+ *
+ * Использует шаблон `.users-list__table-row` для генерации карточек.
+ */
+
+// @ts-nocheck
+
 import { checkedUsersButton, buyButton, sellButton } from './tabs.js';
 import { openUserModal} from './modal/controls/open.js';
 import { roundToZeroDecimal } from './util.js';
@@ -6,12 +19,24 @@ import { roundToZeroDecimal } from './util.js';
 const container = document.querySelector('.users-list__table-body');
 const userTemplate = document.querySelector('#user-table-row__template').content.querySelector('.users-list__table-row');
 
-// Форматирует лимит наличных в зависимости от типа пользователя
+/**
+ * Форматирует лимит наличных в зависимости от типа пользователя.
+ * @param {Object} data - Данные пользователя.
+ * @param {'buyer'|'seller'} data.status - Роль пользователя.
+ * @param {number} data.minAmount - Минимальная сумма сделки.
+ * @param {{amount: number, currency: string}} data.balance - Баланс пользователя.
+ * @param {number} data.exchangeRate - Курс обмена.
+ * @returns {string} Отформатированный текст лимита.
+ */
 const formatCashLimit = (data) => data.status === 'seller'
   ? `${data.minAmount} ₽ - ${roundToZeroDecimal(data.balance.amount * data.exchangeRate)} ₽`
   : `${data.minAmount} ₽ - ${roundToZeroDecimal(data.balance.amount)} ₽`;
 
-// Отрисовка платёжных методов
+/**
+ * Отрисовывает список платёжных методов пользователя в виде бейджей.
+ * @param {HTMLElement} paymentContainer - Контейнер, куда добавляются методы оплаты.
+ * @param {Array<{provider: string}>} methods - Массив объектов с названиями провайдеров.
+ */
 const renderPaymentMethods = (paymentContainer, methods) => {
   paymentContainer.innerHTML = '';
   methods.forEach((method) => {
@@ -22,7 +47,17 @@ const renderPaymentMethods = (paymentContainer, methods) => {
   });
 };
 
-// Функция создания карточки пользователя
+/**
+ * Создаёт DOM-элемент карточки пользователя на основе данных и шаблона.
+ * @param {Object} data - Объект с данными пользователя.
+ * @param {string} data.userName - Имя пользователя.
+ * @param {boolean} data.isVerified - Флаг верификации пользователя.
+ * @param {'buyer'|'seller'} data.status - Роль пользователя.
+ * @param {number} data.exchangeRate - Курс обмена.
+ * @param {{amount: number, currency: string}} data.balance - Баланс пользователя.
+ * @param {Array<{provider: string}>} data.paymentMethods - Список платёжных методов.
+ * @returns {HTMLElement} Готовый DOM-элемент строки таблицы пользователя.
+ */
 const createUser = (data) => {
   const userItem = userTemplate.cloneNode(true);
   const paymentMethodsContainer = userItem.querySelector('.users-list__badges-list');
@@ -41,6 +76,8 @@ const createUser = (data) => {
   } else {
     paymentMethodsContainer.innerHTML = '';
   }
+
+  // Обработчик кнопки "Обменять"
   userItem.querySelector('.btn--greenborder').addEventListener('click', () => {
     openUserModal(data);
   });
@@ -48,7 +85,11 @@ const createUser = (data) => {
   return userItem;
 };
 
-// Функция фильтрации пользователей по активным вкладкам
+/**
+ * Фильтрует список пользователей в зависимости от активных вкладок и чекбоксов.
+ * @param {Array<Object>} users - Исходный массив пользователей.
+ * @returns {Array<Object>} Отфильтрованный массив пользователей.
+ */
 const filterUsers = (users) => {
   let filtered = users;
 
@@ -65,7 +106,10 @@ const filterUsers = (users) => {
   return filtered;
 };
 
-// Функция рендера списка пользователей
+/**
+ * Отрисовывает список пользователей в таблице на основе шаблона и фильтрации.
+ * @param {Array<Object>} users - Массив данных пользователей.
+ */
 const renderUsers = (users) => {
   container.querySelectorAll('.users-list__table-row').forEach((element) => element.remove());
 
