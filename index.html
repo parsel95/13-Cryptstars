@@ -295,11 +295,11 @@
         Обратите внимание, что при открытии попапа также нужно убрать скролл с body,
         для этого можете использовать класс "scroll-lock"
     -->
-    <div class="modal modal--buy" style="display: none;">
+    <div class="modal modal--buy" role="dialog" aria-modal="true" aria-labelledby="modal-description-buy" style="display: none;">
         <div class="modal__wrapper">
             <div class="modal__overlay" data-close-modal></div>
             <div class="modal__content">
-                <h2 class="modal__description">Покупка криптовалюты</h2>
+                <h2 class="modal__description" id="modal-description-buy">Покупка криптовалюты</h2>
                 <!-- Не забудьте указать верный action-атрибут -->
                 <form id="modal-buy" class="modal-buy" method="post" enctype="multipart/form-data" action="https://cryptostar.grading.htmlacademy.pro/">
                     <!--
@@ -423,11 +423,11 @@
         Обратите внимание, что при открытии попапа также нужно убрать скролл с body,
         для этого можете использовать класс "scroll-lock"
     -->
-    <div class="modal modal--sell" style="display: none;">
+    <div class="modal modal--sell" role="dialog" aria-modal="true" aria-labelledby="modal-description-sell" style="display: none;">
         <div class="modal__wrapper">
             <div class="modal__overlay" data-close-modal></div>
             <div class="modal__content">
-                <h2 class="modal__description">Продажа криптовалюты</h2>
+                <h2 class="modal__description" id="modal-description-sell">Продажа криптовалюты</h2>
                 <!-- Не забудьте указать верный action-атрибут -->
                 <form id="modal-sell" class="modal-sell" method="post" enctype="multipart/form-data" action="https://cryptostar.grading.htmlacademy.pro/">
                     <!--

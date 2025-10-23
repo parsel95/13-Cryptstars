@@ -11,10 +11,10 @@
 import { getDataUsers, getDataUsersArray } from './fetch.js';
 import { addMarkersToMap } from './map.js';
 
-/** Элемент чекбокса для фильтрации проверенных пользователей */
+/** Чекбокс фильтра "Только проверенные пользователи" */
 const checkedUsersButton = document.querySelector('#checked-users');
 
-/** Элемент чекбокса для фильтрации проверенных пользователей */
+/** Контролы вкладок "Купить" / "Продать" */
 const tabsListControls = document.querySelectorAll('.tabs--toggle-buy-sell .tabs__control');
 const buyButton = Array.from(tabsListControls).find((button) => button.textContent === 'Купить');
 const sellButton = Array.from(tabsListControls).find((button) => button.textContent === 'Продать');

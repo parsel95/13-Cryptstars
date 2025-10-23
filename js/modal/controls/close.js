@@ -32,6 +32,7 @@ const userWalletInputs = document.querySelectorAll('.custom-input__input');
 const hideModal = (modal) => {
   modal.style.display = 'none';
   body.classList.remove('scroll-lock');
+  modal.setAttribute('aria-hidden', 'true');
 };
 
 /**
