@@ -44,8 +44,17 @@ checkedUsersButton.addEventListener('change', updateUsers);
  * @param {HTMLElement} inactiveBtn - Неактивная вкладка, которую нужно деактивировать.
  */
 const toggleListTabs = (activeBtn, inactiveBtn) => {
-  activeBtn.classList.add('is-active');
-  inactiveBtn.classList.remove('is-active');
+  requestAnimationFrame(() => {
+    activeBtn.classList.add('is-active');
+    inactiveBtn.classList.remove('is-active');
+
+    activeBtn.style.transform = 'scale(0.95)';
+    requestAnimationFrame(() => {
+      activeBtn.style.transform = 'scale(1)';
+      activeBtn.style.transition = 'transform 0.2s ease';
+    });
+  });
+
   getDataUsers();
 
   // Блокировка кнопки карты, если выбрана вкладка "Продать"

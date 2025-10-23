@@ -12,14 +12,9 @@
 
 import { getDataUsers, getDataUser } from './fetch.js';
 
-/**
- * Загружает список пользователей для отображения в таблице/карте.
- * @function
- */
-getDataUsers();
+/** Первичная загрузка данных при инициализации приложения */
+requestAnimationFrame(() => {
+  getDataUsers();
+  getDataUser();
+});
 
-/**
- * Загружает данные текущего пользователя для отображения в профиле.
- * @function
- */
-getDataUser();

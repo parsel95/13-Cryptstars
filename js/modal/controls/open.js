@@ -23,10 +23,12 @@ import { onFormSubmit } from './form-submit.js';
  * @returns {void}
  */
 const showModal = (modal) => {
-  modal.style.display = 'block';
-  body.classList.add('scroll-lock');
-  modal.style.zIndex = '5000'; // Повышаем z-index для гарантированного отображения поверх других элементов
-  modal.setAttribute('aria-hidden', 'false');
+  requestAnimationFrame(() => {
+    modal.style.display = 'block';
+    body.classList.add('scroll-lock');
+    modal.style.zIndex = '5000';
+    modal.setAttribute('aria-hidden', 'false');
+  });
 };
 
 /**

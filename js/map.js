@@ -60,12 +60,33 @@ const createMarkerIcon = (isVerified) => {
  * Применяет стили к попапу карты.
  */
 const styleMapPopup = () => {
-  document.querySelector('.user-card').style.display = 'grid';
-  document.querySelector('.user-card__cash-item--currency').style.gridColumn = '1 / 2';
-  document.querySelector('.user-card__cash-item--exchangerate').style.gridColumn = '2 / 3';
-  document.querySelector('.user-card__cash-item--exchangerate').style.justifySelf = 'end';
-  document.querySelector('.user-card__badges-list').style.gridColumn = '1 / 1';
-  document.querySelector('.user-card__change-btn').style.gridColumn = '1 / 1';
+  requestAnimationFrame(() => {
+    const userCard = document.querySelector('.user-card');
+    if (userCard) {
+      userCard.style.display = 'grid';
+
+      requestAnimationFrame(() => {
+        const currencyItem = document.querySelector('.user-card__cash-item--currency');
+        const exchangeItem = document.querySelector('.user-card__cash-item--exchangerate');
+        const badgesList = document.querySelector('.user-card__badges-list');
+        const changeBtn = document.querySelector('.user-card__change-btn');
+
+        if (currencyItem) {
+          currencyItem.style.gridColumn = '1 / 2';
+        }
+        if (exchangeItem) {
+          exchangeItem.style.gridColumn = '2 / 3';
+          exchangeItem.style.justifySelf = 'end';
+        }
+        if (badgesList) {
+          badgesList.style.gridColumn = '1 / 1';
+        }
+        if (changeBtn) {
+          changeBtn.style.gridColumn = '1 / 1';
+        }
+      });
+    }
+  });
 };
 
 /**
@@ -82,21 +103,41 @@ const styleMapPopup = () => {
  * @param {number} data.minAmount - Минимальная сумма обмена.
  */
 const populateUserCardData = (popupElement, data) => {
-  if (!data.isVerified) {
-    popupElement.querySelector('.user-card__user-name svg').remove();
-  }
+  requestAnimationFrame(() => {
+    if (!data.isVerified) {
+      const svg = popupElement.querySelector('.user-card__user-name svg');
+      if (svg) {
+        svg.remove();
+      }
+    }
 
-  popupElement.querySelector('.user-card__user-name span').textContent = data.userName;
+    const nameSpan = popupElement.querySelector('.user-card__user-name span');
+    if (nameSpan) {
+      nameSpan.textContent = data.userName;
+    }
 
-  popupElement.querySelector('.user-card__cash-item--currency .user-card__cash-data').textContent = data.balance.currency;
-  popupElement.querySelector('.user-card__cash-item--exchangerate .user-card__cash-data').textContent = `${Math.round(data.exchangeRate)} ₽`;
+    // Остальные обновления тоже в rAF
+    requestAnimationFrame(() => {
+      const currencyElement = popupElement.querySelector('.user-card__cash-item--currency .user-card__cash-data');
+      const exchangeElement = popupElement.querySelector('.user-card__cash-item--exchangerate .user-card__cash-data');
+      const limitElement = popupElement.querySelector('.user-card__cash-item--limit .user-card__cash-data');
 
-  const limitText =
-    data.status === 'seller'
-      ? `${data.minAmount}\u00A0₽ - ${Math.round(data.balance.amount * data.exchangeRate)}\u00A0₽`
-      : `${data.minAmount}\u00A0₽ - ${Math.round(data.balance.amount)}\u00A0₽`;
+      if (currencyElement) {
+        currencyElement.textContent = data.balance.currency;
+      }
+      if (exchangeElement) {
+        exchangeElement.textContent = `${Math.round(data.exchangeRate)} ₽`;
+      }
 
-  popupElement.querySelector('.user-card__cash-item--limit .user-card__cash-data').textContent = limitText;
+      const limitText = data.status === 'seller'
+        ? `${data.minAmount}\u00A0₽ - ${Math.round(data.balance.amount * data.exchangeRate)}\u00A0₽`
+        : `${data.minAmount}\u00A0₽ - ${Math.round(data.balance.amount)}\u00A0₽`;
+
+      if (limitElement) {
+        limitElement.textContent = limitText;
+      }
+    });
+  });
 };
 
 /**
@@ -154,16 +195,25 @@ const createMarker = (user) => {
   if (!user.coords) {
     return;
   }
-  const marker = L.marker(
-    [user.coords.lat, user.coords.lng],
-    { icon: createMarkerIcon(user.isVerified) },
-  );
 
-  marker.addTo(markerGroup);
-  marker.bindPopup(createMapPopup(user));
+  requestAnimationFrame(() => {
+    const marker = L.marker(
+      [user.coords.lat, user.coords.lng],
+      { icon: createMarkerIcon(user.isVerified) },
+    );
 
-  marker.on('popupopen', () => {
-    styleMapPopup();
+    marker.addTo(markerGroup);
+
+    // Отложенное создание попапа
+    requestAnimationFrame(() => {
+      marker.bindPopup(createMapPopup(user));
+    });
+
+    marker.on('popupopen', () => {
+      requestAnimationFrame(() => {
+        styleMapPopup();
+      });
+    });
   });
 };
 
@@ -173,19 +223,24 @@ const createMarker = (user) => {
  * @param {boolean} [onlyVerified=false] - Фильтровать только проверенных пользователей.
  */
 const addMarkersToMap = (users, onlyVerified = false) => {
-  markerGroup.clearLayers();
+  requestAnimationFrame(() => {
+    markerGroup.clearLayers();
 
-  if (!Array.isArray(users) || users.length === 0) {
-    return;
-  }
+    if (!Array.isArray(users) || users.length === 0) {
+      return;
+    }
 
-  let filtered = users;
+    let filtered = users;
+    if (onlyVerified) {
+      filtered = filtered.filter((user) => user.isVerified && user.coords);
+    }
 
-  if (onlyVerified) {
-    filtered = filtered.filter((user) => user.isVerified && user.coords);
-  }
-
-  filtered.forEach(createMarker);
+    filtered.forEach((user) => {
+      requestAnimationFrame(() => {
+        createMarker(user);
+      });
+    });
+  });
 };
 
 /**
@@ -206,26 +261,30 @@ const toggleMapTabs = (activeBtn, inactiveBtn) => {
  */
 listButton.addEventListener('click', () => {
   toggleMapTabs(listButton, mapButton);
-  mapContainer.style.display = 'none';
-  showElement(tabsListControls);
+
+  requestAnimationFrame(() => {
+    mapContainer.style.display = 'none';
+    showElement(tabsListControls);
+  });
 
   const usersTable = document.querySelector('.users-list__table-body');
   const emptyMessage = document.querySelector('.container--lightbackground');
 
   getDataUsersArray((users) => {
-    if (users.length === 0) {
-      usersTable.style.display = 'none';
-      if (emptyMessage) {
-        emptyMessage.style.display = 'block';
+    requestAnimationFrame(() => {
+      if (users.length === 0) {
+        usersTable.style.display = 'none';
+        if (emptyMessage) {
+          emptyMessage.style.display = 'block';
+        }
+      } else {
+        usersTable.style.display = 'block';
+        if (emptyMessage) {
+          emptyMessage.style.display = 'none';
+        }
+        renderUsers(users);
       }
-    } else {
-      usersTable.style.display = 'block';
-      if (emptyMessage) {
-        emptyMessage.style.display = 'none';
-      }
-      renderUsers(users);
-    }
-
+    });
     usersList.style.display = 'block';
   });
 });
@@ -238,25 +297,34 @@ listButton.addEventListener('click', () => {
  */
 mapButton.addEventListener('click', () => {
   toggleMapTabs(mapButton, listButton);
-  usersList.style.display = 'none';
-  hideElement(tabsListControls);
+
+  requestAnimationFrame(() => {
+    usersList.style.display = 'none';
+    hideElement(tabsListControls);
+  });
 
   const emptyMessage = document.querySelector('.container--lightbackground');
   if (emptyMessage) {
-    emptyMessage.style.display = 'none';
+    requestAnimationFrame(() => {
+      emptyMessage.style.display = 'none';
+    });
   }
 
-  mapContainer.style.display = 'block';
-  map.invalidateSize();
+  requestAnimationFrame(() => {
+    mapContainer.style.display = 'block';
+    map.invalidateSize();
+  });
 
   getDataUsersArray((users) => {
-    if (!users || users.length === 0) {
-      addMarkersToMap([]);
-      map.invalidateSize();
-      emptyMessage.style.display = 'none';
-    } else {
-      addMarkersToMap(users, checkedUsersButton.checked);
-    }
+    requestAnimationFrame(() => {
+      if (!users || users.length === 0) {
+        addMarkersToMap([]);
+        map.invalidateSize();
+        emptyMessage.style.display = 'none';
+      } else {
+        addMarkersToMap(users, checkedUsersButton.checked);
+      }
+    });
   });
 });
 

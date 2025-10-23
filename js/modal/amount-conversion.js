@@ -70,11 +70,13 @@ const recalcAmount = (modal, data, type) => {
       ? roundToZeroDecimal(rawResult)
       : roundToTwoDecimal(rawResult);
 
-  field.value = String(result).replace(/\.$/, '');
-
-  // Валидируем оба поля после пересчета
-  state.amountPristine.validate(input);
-  state.amountPristine.validate(field);
+  // Оптимизированное обновление в следующем кадре анимации
+  requestAnimationFrame(() => {
+    field.value = String(result).replace(/\.$/, '');
+    // Валидируем оба поля после пересчета
+    state.amountPristine.validate(input);
+    state.amountPristine.validate(field);
+  });
 };
 
 /**
