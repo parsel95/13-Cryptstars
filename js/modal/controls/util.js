@@ -8,7 +8,7 @@
 
 // @ts-nocheck
 
-import { isEscapeKey } from '../../util.js';
+import { isEscapeKey } from '../../util/dom.js';
 import { closeUserModal } from './close.js';
 
 // DOM-элементы

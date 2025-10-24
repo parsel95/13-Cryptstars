@@ -10,7 +10,7 @@
 
 import { getDataUserObject } from '../fetch.js';
 import { populateSelect } from './payment-methods.js';
-import { roundToZeroDecimal, roundToTwoDecimal } from '../util.js';
+import { roundToZeroDecimal, roundToTwoDecimal } from '../util/math.js';
 
 /**
  * Устанавливает имя пользователя с иконкой верификации, если пользователь верифицирован.

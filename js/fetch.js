@@ -9,9 +9,10 @@
 
 // @ts-nocheck
 
+import { apiClient } from './api/api-client.js';
 import { renderUsers } from './users.js';
 import { createDataUser } from './user.js';
-import { hideElement, hideElementDisplayNone } from './util.js';
+import { hideElement, hideElementDisplayNone } from './util/dom.js';
 
 // DOM-элементы
 const userProfile = document.querySelector('.user-profile');
@@ -79,23 +80,7 @@ const isValidProfile = (user) => {
  */
 async function getDataUsersArray (callback) {
   try {
-    const response = await fetch('https://cryptostar.grading.htmlacademy.pro/contractors');
-
-    // Проверяем статус ответа
-    if (!response.ok) {
-      console.error(`Ошибка HTTP: ${response.status}`);
-      showServerUnavailable();
-      return;
-    }
-
-    let users;
-    try {
-      users = await response.json();
-    } catch (jsonError) {
-      console.error('Ошибка парсинга JSON:', jsonError);
-      showServerUnavailable();
-      return;
-    }
+    const users = await apiClient.getContractors();
 
     // Проверка структуры
     if (!Array.isArray(users)) {
@@ -141,22 +126,7 @@ const getDataUsers = () => {
  */
 async function getDataUserObject (callback) {
   try {
-    const response = await fetch('https://cryptostar.grading.htmlacademy.pro/user');
-
-    if (!response.ok) {
-      console.error(`Ошибка HTTP: ${response.status}`);
-      showServerUnavailable();
-      return;
-    }
-
-    let user;
-    try {
-      user = await response.json();
-    } catch (jsonError) {
-      console.error('Ошибка парсинга JSON профиля пользователя:', jsonError);
-      showServerUnavailable();
-      return;
-    }
+    const user = await apiClient.getUser();
 
     // Проверка структуры данных
     if (!isValidProfile(user)) {

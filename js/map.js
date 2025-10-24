@@ -8,9 +8,11 @@
 
 // @ts-nocheck
 
+import { Config } from './config.js';
+
 import { getDataUsersArray} from './fetch.js';
 import { renderUsers } from './users.js';
-import { hideElement, showElement } from './util.js';
+import { hideElement, showElement } from './util/dom.js';
 import { checkedUsersButton } from './tabs.js';
 import { openUserModal } from './modal/controls/open.js';
 
@@ -27,15 +29,12 @@ const mapContainer = [...containers].find((container) => container.querySelector
 
 /** Инициализация карты Leaflet */
 const map = L.map('map')
-  .setView({
-    lat: 59.92749,
-    lng: 30.31127,
-  }, 10);
+  .setView(Config.MAP.DEFAULT_VIEW, Config.MAP.ZOOM);
 
 L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  Config.MAP.TILE_LAYER,
   {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    attribution: Config.MAP.ATTRIBUTION,
   },
 ).addTo(map);
 

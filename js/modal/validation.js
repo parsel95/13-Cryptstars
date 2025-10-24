@@ -10,7 +10,8 @@
 
 // @ts-nocheck
 
-import { roundToZeroDecimal, normalizeValue, getConvertedValue } from '../util.js';
+import { Config } from '../config.js';
+import { roundToZeroDecimal, normalizeValue, getConvertedValue } from '../util/math.js';
 
 /**
  * Валидация пароля для подтверждения операции.
@@ -28,8 +29,7 @@ const validatePassword = (pristine, modal) => {
     paymentPassword,
     (value) =>
       // Пароль либо пустой (необязательное поле), либо должен быть "180712"
-      value.trim() === '' || value === '180712'
-    ,
+      value.trim() === '' || value === Config.VALIDATION.PASSWORD,
     'Введён неверный пароль',
     1 // Приоритет валидации
   );

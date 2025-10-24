@@ -7,7 +7,10 @@
 
 // @ts-nocheck
 
-import { roundToZeroDecimal, roundToTwoDecimal, setInputValue, debounce } from '../util.js';
+import { Config } from '../config.js';
+import { setInputValue } from '../util/dom.js';
+import { debounce } from '../util/time.js';
+import { roundToZeroDecimal, roundToTwoDecimal } from '../util/math.js';
 import { limitInputLength } from './validation.js';
 import { state } from './controls/state.js';
 
@@ -121,7 +124,7 @@ const onExchangeAllClick = (modal, data) => {
  * @param {ExchangeData} data - Данные пользователя и курса валют.
  * @returns {void}
  */
-const debouncedRecalcSending = debounce((modal, data) => recalcAmount(modal, data, 'sending'), 400);
+const debouncedRecalcSending = debounce((modal, data) => recalcAmount(modal, data, 'sending'), Config.UI.DEBOUNCE_DELAY);
 
 /**
  * Пересчитывает сумму получения с задержкой (debounce).
@@ -130,7 +133,7 @@ const debouncedRecalcSending = debounce((modal, data) => recalcAmount(modal, dat
  * @param {ExchangeData} data - Объект с данными о пользователе и курсе валют.
  * @returns {void}
  */
-const debouncedRecalcReceiving = debounce((modal, data) => recalcAmount(modal, data, 'receiving'), 400);
+const debouncedRecalcReceiving = debounce((modal, data) => recalcAmount(modal, data, 'receiving'), Config.UI.DEBOUNCE_DELAY);
 
 /**
  * Обработчик ввода суммы для отправки валюты.

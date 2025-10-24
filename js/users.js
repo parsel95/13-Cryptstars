@@ -13,7 +13,7 @@
 
 import { checkedUsersButton, buyButton, sellButton } from './tabs.js';
 import { openUserModal} from './modal/controls/open.js';
-import { roundToZeroDecimal } from './util.js';
+import { roundToZeroDecimal } from './util/math.js';
 
 // DOM-элементы
 const container = document.querySelector('.users-list__table-body');

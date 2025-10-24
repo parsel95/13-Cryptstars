@@ -7,10 +7,13 @@
 
 // @ts-nocheck
 
+import { apiClient } from '../../api/api-client.js';
+import { Config } from '../../config.js';
 import { getActiveModal, getActiveForm } from './util.js';
 import { state } from './state.js';
 import { showZeroAmountError } from '../validation.js';
-import { showMessage, throttle, blockSubmitButton, unblockSubmitButton } from '../../util.js';
+import { throttle } from '../../util/time.js';
+import { showMessage, blockSubmitButton, unblockSubmitButton } from '../../util/form.js';
 
 /**
  * Основной обработчик отправки формы.
@@ -30,7 +33,6 @@ const handleFormSubmit = async (evt) => {
 
   const MainIsValid = state.pristine.validate();
   const AmountIsValid = state.amountPristine.validate();
-  const API_URL = 'https://cryptostar.grading.htmlacademy.pro/';
 
   // Используем сырые значения для избежания проблем с округление
   const sendingValue = parseFloat(sendingInput.value.trim().replace(',', '.'));
@@ -49,27 +51,19 @@ const handleFormSubmit = async (evt) => {
 
   const formData = new FormData(evt.target);
 
-  // Заменяем значения на сырые данные из data-атрибуто
+  // Заменяем значения на сырые данные из data-атрибутов
   formData.set('sendingAmount', sendingInput.dataset.rawValue);
   formData.set('receivingAmount', receivingInput.dataset.rawValue);
   blockSubmitButton(submitButton, 'Обмениваю...');
 
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: formData,
-    });
+    await apiClient.submitExchange(formData);
 
-    if (response.ok) {
+    showMessage(successMessage);
+    form.reset();
+    state.pristine.reset();
+    state.amountPristine.reset();
 
-      showMessage(successMessage);
-      form.reset();
-      state.pristine.reset();
-      state.amountPristine.reset();
-    } else {
-
-      showMessage(errorMessage);
-    }
   } catch (error) {
     showMessage(errorMessage);
   } finally {
@@ -81,4 +75,4 @@ const handleFormSubmit = async (evt) => {
  * Обработчик отправки формы с защитой от множественных нажатий (throttle).
  * @type {Function}
  */
-export const onFormSubmit = throttle(handleFormSubmit, 1500);
+export const onFormSubmit = throttle(handleFormSubmit, Config.UI.THROTTLE_DELAY);
