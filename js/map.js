@@ -186,12 +186,31 @@ const createMapPopup = (data) => {
   return popupElement;
 };
 
+/** Проверяет валидность координат пользователя.
+ * @param {Object} coords - Координаты пользователя.
+ * @param {number} coords.lat - Широта.
+ * @param {number} coords.lng - Долгота.
+ * @returns {boolean} - true, если координаты валидны, иначе false.
+ */
+const isValidCoords = (coords) => coords &&
+    typeof coords.lat === 'number' &&
+    typeof coords.lng === 'number' &&
+    coords.lat >= -90 && coords.lat <= 90 &&
+    coords.lng >= -180 && coords.lng <= 180;
+
 /**
  * Создает маркер на карте для пользователя с привязанным попапом.
  * @param {Object} user - Данные пользователя.
  */
 const createMarker = (user) => {
   if (!user.coords) {
+    return;
+  }
+
+  // Проверка валидности координат
+  if (!isValidCoords(user.coords)) {
+    // eslint-disable-next-line no-console
+    console.warn('Пропуск пользователя с невалидными координатами:', user.userName);
     return;
   }
 

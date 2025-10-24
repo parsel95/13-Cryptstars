@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * @file form-submit.js
  * @description
@@ -14,6 +15,24 @@ import { state } from './state.js';
 import { showZeroAmountError } from '../validation.js';
 import { throttle } from '../../util/time.js';
 import { showMessage, blockSubmitButton, unblockSubmitButton } from '../../util/form.js';
+
+/**
+ * Проверяет, является ли значение валидным числом
+ * @param {string} value - Значение для проверки
+ * @returns {boolean} true если значение валидное число
+ */
+const isValidNumber = (value) => {
+  if (!value || typeof value !== 'string') {
+    return false;
+  }
+  const trimmedValue = value.trim();
+  if (trimmedValue === '') {
+    return false;
+  }
+
+  const num = parseFloat(trimmedValue.replace(',', '.'));
+  return !isNaN(num) && isFinite(num) && num >= 0;
+};
 
 /**
  * Основной обработчик отправки формы.
@@ -55,6 +74,17 @@ const handleFormSubmit = async (evt) => {
   formData.set('sendingAmount', sendingInput.dataset.rawValue);
   formData.set('receivingAmount', receivingInput.dataset.rawValue);
   blockSubmitButton(submitButton, 'Обмениваю...');
+
+  // Проверка числовых значений
+  const sendingAmount = formData.get('sendingAmount');
+  const receivingAmount = formData.get('receivingAmount');
+
+  if (!isValidNumber(sendingAmount) || !isValidNumber(receivingAmount)) {
+    console.error('Неверный формат числовых значений:', { sendingAmount, receivingAmount });
+    showMessage(errorMessage);
+    return;
+  }
+
 
   try {
     await apiClient.submitExchange(formData);

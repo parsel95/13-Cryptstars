@@ -29,7 +29,7 @@ const validatePassword = (pristine, modal) => {
     paymentPassword,
     (value) =>
       // Пароль либо пустой (необязательное поле), либо должен быть "180712"
-      value.trim() === '' || value === Config.VALIDATION.PASSWORD,
+      typeof value !== 'string' || value.trim() === '' || value === Config.VALIDATION.PASSWORD,
     'Введён неверный пароль',
     1 // Приоритет валидации
   );
